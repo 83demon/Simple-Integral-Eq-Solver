@@ -75,8 +75,9 @@ class Solver:
 
     def _calculate_accuracy(self):
         if not self._unity_flag:
-            pass
-        self.epsilon = self.b.T @ self.b - self.b.T @ self.P_1 @ self.P_1_inv @ self.b
+            temp1 = self.P_1 @ self.P_1_inv
+            self.epsilon = self.b.T @ self.b - self.b.T @ temp1 @ self.b
+
 
     def _solve(self):
         for nu in range(self._nu_set_length):
