@@ -24,7 +24,9 @@ class GUI:
         self._marker_width = 3
         self._input_box_size = (6,1)
         self._output_box_size = (35,1)
-        self._default_value = '0'
+        self._default_value = '2'
+        self._default_value_T = '1'
+        self._default_matrix_value = 't'
         self.color = 'forestgreen'
         self.handler()
 
@@ -39,7 +41,7 @@ class GUI:
     def _construct_matrix_input(self):
         self.layout = [[sg.Text(self._input_matrix_text)]]
         for i in range(int(self._m)):
-            temp = [sg.Input(size=self._input_box_size,default_text=self._default_value) for _ in range(int(self._n))]
+            temp = [sg.Input(size=self._input_box_size,default_text=self._default_matrix_value) for _ in range(int(self._n))]
             self.layout.append(temp)
         self.layout.append([sg.Submit()])
         self.window = sg.Window(self.title, self.layout)
@@ -60,7 +62,7 @@ class GUI:
 
     def _construct_T_input(self):
         self.layout = [[sg.Text(self._input_T_text)],
-                       [sg.Input(size=self._input_box_size,default_text=self._default_value)],
+                       [sg.Input(size=self._input_box_size,default_text=self._default_value_T)],
                        [sg.Submit()]]
         self.window = sg.Window(self.title, self.layout)
         event, self.T = self.window.read()
@@ -86,20 +88,67 @@ class GUI:
         self.layout.append([sg.Text(f"Epsilon^2: {epsilon[0,0]}")])
         self.layout.append([sg.Text(f"There is only one solution: {unity_check}")])
         self.layout.append([sg.Text(f"Det: {det}")])
-        self.layout.append([sg.CloseButton("Bye!")])
+        self.layout.append([sg.CloseButton("Bye!"),sg.Button("Show Visualisation")])
         self.window = sg.Window(self.title, self.layout)
 
         while True:
 
             event, values = self.window.read()
-
+            if event == 'Show Visualisation':
+                self._show_graphs(solution, unity_check)
             if event == sg.WIN_CLOSED:
                 break
 
         self.window.close()
 
     def _show_graphs(self,solution,unity_flag):
-        raise NotImplementedError()
+        from sympy import Symbol, plot_parametric
+        from sympy.plotting.plot import plot3d_parametric_line
+        t = Symbol('t')
+        T = self.T[0]
+        if self._n == 2 or self._n == 3:
+            if self._n == 2:
+                if unity_flag:
+                    for v in solution.values():
+                        plot_parametric((v[0,0],v[1,0],(t,0,T)))
+                        break
+                else:
+                    vals = []
+                    for v in solution.values():
+                        vals.append(v)
+                    plot_parametric((vals[0][0, 0], vals[0][1, 0], (t, 0, T)),
+                                    (vals[1][0, 0], vals[1][1, 0], (t, 0, T)),
+                                    (vals[2][0, 0], vals[2][1, 0], (t, 0, T)),
+                                    (vals[3][0, 0], vals[3][1, 0], (t, 0, T)),
+                                    (vals[4][0, 0], vals[4][1, 0], (t, 0, T)))
+
+            if self._n == 3:
+
+                if unity_flag:
+                    for v in solution.values():
+                        plot3d_parametric_line(v[0,0],v[1,0],v[2,0],(t,0,T))
+                        break
+                else:
+                    vals = []
+                    for v in solution.values():
+                        vals.append(v)
+                    plot3d_parametric_line((vals[0][0, 0], vals[0][1, 0], vals[0][2,0], (t, 0, T)),
+                                    (vals[1][0, 0], vals[1][1, 0], vals[1][2,0], (t, 0, T)),
+                                    (vals[2][0, 0], vals[2][1, 0], vals[2][2,0], (t, 0, T)),
+                                    (vals[3][0, 0], vals[3][1, 0], vals[3][2,0], (t, 0, T)),
+                                    (vals[4][0, 0], vals[4][1, 0], vals[4][2,0], (t, 0, T)))
+        else:
+
+            visualize_window = sg.Window('Whoops...',
+                                         [[sg.Text(f"Teach me to visualize plots in {self._n} dimensions")],
+                                          [sg.CloseButton("I'll teach you"), sg.CloseButton("I'm done.")]])
+            while True:
+
+                event, values = visualize_window.read()
+
+                if event == sg.WIN_CLOSED:
+                    break
+            visualize_window.close()
 
 
     def handler(self):

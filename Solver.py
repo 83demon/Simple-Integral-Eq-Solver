@@ -22,7 +22,7 @@ class Solver:
         self.det = None # value of a unity check
         self.epsilon = np.array([[0]])  # accuracy
         self._unity_flag = None  # flag to indicate unity of the solution
-        self.n_steps = 20 # number of steps to split an interval [0;T]
+        self.n_steps = 1 # number of steps to split an interval [0;T]
         self.ndigits=3
 
         self._nu_set_length = 5
@@ -58,22 +58,24 @@ class Solver:
         """Checks a solution for unity"""
 
         def split_interval(start,end,steps):
-            return [start+i*(end-start)/steps for i in range(steps)]
+            return [start+(i+1)*(end-start)/steps for i in range(steps)]
 
 
         N_values = split_interval(self.start,self.T,N)
-        det_matrix = self.A.T.subs({self.t_symbol:self.t_i_symbol})@self.A.subs({self.t_symbol:self.t_j_symbol})
-        #for i in range(N):
-        #    temp = []
-        #    for j in range(N):
-        temp_matrix = np.array(det_matrix.evalf(subs={self.t_i_symbol:N_values[-1],self.t_j_symbol:N_values[-1]}),dtype=np.float64)
-        self.det = np.linalg.det(temp_matrix)
-
+        big_matrix = sym.zeros(N*self.n,N*self.n)
+        for i in range(N):
+            for j in range(N):
+                temp = self.A.T.evalf(subs={self.t_symbol:N_values[i]}) @ self.A.evalf(subs={self.t_symbol:N_values[j] })
+                big_matrix[i*self.n:self.n*(i+1) , j*self.n:self.n*(j+1)] = temp
+        np_matrix = np.array(big_matrix,dtype=np.float64)
+        self.det = np.linalg.det(np_matrix)
+        print(np_matrix)
         print(f"Det: {self.det}")
         return self.det>0
 
     def _calculate_accuracy(self):
-        if not self._unity_flag: pass
+        if not self._unity_flag:
+            pass
         self.epsilon = self.b.T @ self.b - self.b.T @ self.P_1 @ self.P_1_inv @ self.b
 
     def _solve(self):
