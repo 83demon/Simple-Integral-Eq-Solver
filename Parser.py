@@ -3,13 +3,14 @@ import sympy as sym
 from sympy.parsing.sympy_parser import parse_expr
 
 class Parser:
-    def __init__(self,m,n,matrix,b):
+    def __init__(self,m,n,matrix,b,T):
         self.m = int(m)
         self.n = int(n)
         self.raw_matrix = matrix
         self.raw_b = b
         self.matrix = sym.zeros(m,n)
         self.b = sym.zeros(m,1)
+        self.T = float(T[0])
 
     def _parse_matrix(self):
         for i in range(self.m*self.n):
@@ -22,4 +23,4 @@ class Parser:
     def main(self):
         self._parse_matrix()
         self._parse_b_vector()
-        return self.matrix, self.b
+        return self.matrix, self.b, self.T

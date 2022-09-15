@@ -1,5 +1,6 @@
 import numpy as np
 import sympy as sym
+from sympy.core.rules import Transform
 from sympy import *
 
 
@@ -78,6 +79,7 @@ class Solver:
     def _solve(self):
         for nu in range(self._nu_set_length):
             self.solution[tuple(self.nu_values[nu])] = sym.simplify(self.A.T@self.P_1_inv@self.b + self.nu_values[nu] - self.A.T@self.P_1_inv@self.A_nu_values[nu]).evalf()
+            self.solution[tuple(self.nu_values[nu])] = (self.solution[tuple(self.nu_values[nu])]).xreplace(Transform(lambda x: x.round(self.ndigits), lambda x: isinstance(x, Float)))
             # to round?
 
     def main(self):
@@ -91,16 +93,16 @@ class Solver:
         return self.solution, self.epsilon, self.det, self._unity_flag
 
 
-
-t = sym.Symbol('t')
-matrix = sym.Matrix([[t,2*t],[sin(t),cos(t)]])
-b = np.array([[1],[16]])
-T = 1
-solver = Solver(matrix,b,T)
-res, eps, det, unity_flag = solver.main()
-print(eps)
-for v in res.values():
-    for i in range(matrix.shape[1]):
-        print(v[i])
-    print()
+if __name__ == "__main__":
+    t = sym.Symbol('t')
+    matrix = sym.Matrix([[t,2*t],[sin(t),cos(t)]])
+    b = np.array([[1],[16]])
+    T = 1
+    solver = Solver(matrix,b,T)
+    res, eps, det, unity_flag = solver.main()
+    print(eps)
+    for v in res.values():
+        for i in range(matrix.shape[1]):
+            print(v[i])
+        print()
 
