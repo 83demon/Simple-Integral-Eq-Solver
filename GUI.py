@@ -85,6 +85,7 @@ class GUI:
         #    self.layout.append([sg.Text(" ".join([str(pinv_matrix[i][j]) for j in range(self._m)]))])
         self.layout.append([sg.Text(f"Epsilon^2: {epsilon[0,0]}")])
         self.layout.append([sg.Text(f"There is only one solution: {unity_check}")])
+        self.layout.append([sg.Text(f"Det: {det}")])
         self.layout.append([sg.CloseButton("Bye!")])
         self.window = sg.Window(self.title, self.layout)
 
@@ -103,23 +104,24 @@ class GUI:
 
     def handler(self):
         self._first_run()
-        if 1<=self._n<=13 and 1<=self._m<=25:
+        if self._n<=0 or self._m <=0:
+            raise ValueError(f'Cannot construct matrix with shape {self._m,self._n}')
+        else:
             self._construct_matrix_input()
             self._construct_b_vector_input()
             self._construct_T_input()
             parser = Parser(self._m,self._n,self.raw_matrix,self.raw_b_vector,self.T)
             solver = Solver(*parser.main())
             solution, eps, det, unity_check = solver.main()
+            console_output(solution, det, eps, unity_check)
             self._show_result(solution, det, eps, unity_check)
-        elif self._n<=0 or self._m <=0:
-            raise ValueError(f'Cannot construct matrix with shape {self._m,self._n}')
-
-        else:
-            console_input = read_from_console(self._m, self._n)
-            solver = Solver(*console_input)
+        """else:
+            matrix, b , T = read_from_console(self._m, self._n)
+            parser = Parser(self._m,self._n,matrix,b,T)
+            solver = Solver(*parser.main())
             solution, det, eps, unity_check = solver.main()
             console_output(solution, det, eps, unity_check)
-            self._show_graphs(solution,unity_check)
+            self._show_graphs(solution,unity_check)"""
 
 
 
@@ -138,12 +140,10 @@ def read_from_console(m,n):
 
     print(f"Enter a {(m,1)} b vector data separated by whitespace:\n")
     b = input().split(" ")
-    matrix = np.array(matrix_data,dtype=np.float32)
-    b_vector = np.array(b,dtype=np.float32)
-    b_vector = b_vector[:,np.newaxis]
+    print("Enter your T value:\n")
+    T = {0:input()}
 
-
-    return matrix, b_vector
+    return matrix_data, b, T
 
 
 def console_output(solution, det, eps, unity_check):
@@ -151,7 +151,7 @@ def console_output(solution, det, eps, unity_check):
     for k,v in solution.items():
         print(f"{k} :\n{v}")
     print()
-    print("Pseudo inverted matrix is:\n")
+    #print("Pseudo inverted matrix is:\n")
     #for i in range(pinv_matrix.shape[0]):
     #   print(f"{' '.join(str(pinv_matrix[i][j]) for j in range(pinv_matrix.shape[1]))}")
     print()
