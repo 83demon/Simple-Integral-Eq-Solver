@@ -22,7 +22,7 @@ class Solver:
         self.det = None # value of a unity check
         self.epsilon = np.array([[0]])  # accuracy
         self._unity_flag = None  # flag to indicate unity of the solution
-        self.n_steps = 1 # number of steps to split an interval [0;T]
+        self.n_steps = 20 # number of steps to split an interval [0;T]
         self.ndigits=3
 
         self._nu_set_length = 5
@@ -69,7 +69,7 @@ class Solver:
                 big_matrix[i*self.n:self.n*(i+1) , j*self.n:self.n*(j+1)] = temp
         np_matrix = np.array(big_matrix,dtype=np.float64)
         self.det = np.linalg.det(np_matrix)
-        print(np_matrix)
+        #print(np_matrix)
         print(f"Det: {self.det}")
         return self.det>0
 
@@ -78,12 +78,10 @@ class Solver:
             temp1 = self.P_1 @ self.P_1_inv
             self.epsilon = self.b.T @ self.b - self.b.T @ temp1 @ self.b
 
-
     def _solve(self):
         for nu in range(self._nu_set_length):
             self.solution[tuple(self.nu_values[nu])] = sym.simplify(self.A.T@self.P_1_inv@self.b + self.nu_values[nu] - self.A.T@self.P_1_inv@self.A_nu_values[nu]).evalf()
             self.solution[tuple(self.nu_values[nu])] = (self.solution[tuple(self.nu_values[nu])]).xreplace(Transform(lambda x: x.round(self.ndigits), lambda x: isinstance(x, Float)))
-            # to round?
 
     def main(self):
         self._init_nu()
