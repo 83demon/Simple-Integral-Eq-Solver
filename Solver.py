@@ -88,7 +88,7 @@ class Solver:
         self._unity_flag = self._check_for_unity(self.n_steps)
         self._calculate_accuracy()
         self._solve()
-        return self.solution,self.epsilon
+        return self.solution, self.epsilon, self.det, self._unity_flag
 
 
 
@@ -97,7 +97,7 @@ matrix = sym.Matrix([[t,2*t],[sin(t),cos(t)]])
 b = np.array([[1],[16]])
 T = 1
 solver = Solver(matrix,b,T)
-res, eps = solver.main()
+res, eps, det, unity_flag = solver.main()
 print(eps)
 for v in res.values():
     for i in range(matrix.shape[1]):
